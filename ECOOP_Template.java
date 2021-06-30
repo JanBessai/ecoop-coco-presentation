@@ -40,7 +40,7 @@ class Base {
 
 
 
-//*
+/*
 class Ext1 {
 	interface List extends Base.List {
 		List append(List r);
@@ -86,17 +86,17 @@ class Ext1 {
 class Ext2 {
 	interface Fun { List apply(Object o); }
 	
-	interface List extends Ext2.List {
+	interface List extends Ext1.List {
 		List flatMap(Fun f);
 	}
 
-	public static abstract class Nil extends Ext2.Nil implements List {
+	public static abstract class Nil extends Ext1.Nil implements List {
 		public List flatMap(Fun f) {
 			return null; // TODO
 		}
 	}
 
-	public static abstract class Cons extends Ext2.Cons implements List {
+	public static abstract class Cons extends Ext1.Cons implements List {
 		public Cons(Object _hd, List _tl) { super(_hd, _tl); }
 		public List flatMap(Fun f) {
 			return null; // TODO
