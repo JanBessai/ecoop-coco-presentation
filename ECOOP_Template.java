@@ -129,28 +129,32 @@ class Ext3 {
 	public abstract class Append extends List {
 		private List l, r;
 		public Append(List _l, List _r) { l = _l; r = _r; }
+		public List getLeft() { return l; }
+		public List getRight() { return r; }
+		public void setLeft(List _l) { l = _l; }
+		public void setRight(List _r) { r = _r; }
 		public List hnf() {
 			List eval = this;
 			while (eval.canStep()) { eval = eval.step(); }
 			return eval;
 		}
 		public List step() {
-			if (l.canStep()) {
-				l = l.step();
+			if (getLeft().canStep()) {
+				setLeft(getLeft().step());
 				return this;
 			}
-			return l.delayAppend(r);
+			return getLeft().delayAppend(r);
 		}
 		public boolean canStep() { return true; }
 		
 		public List delayAppend(List o) {
-			return app(l, app(r, o));
+			return app(getLeft(), app(getRight(), o));
 		}
 		
 		public Object getHead() { return hnf().getHead(); }
 		public List getTail() { return hnd().getTail(); }
 		public List flatMap() { 
-			return app(l.flatMap(f), r.flatMap(f)); 
+			return app(getLeft().flatMap(f), getRight().flatMap(f)); 
 		}
 	}
 
@@ -234,9 +238,32 @@ class Ext2Final {
 }
 //*/
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 class Ext3Final {
 	// TODO
+	public class Append extends Ext3.List {
+		private List l, r;
+		public Append(List _l, List _r) { l = _l; r = _r; }
+		public List getLeft() { return l; }
+		public List getRight() { return r; }
+		public void setLeft(List _l) { l = _l; }
+		public void setRight(List _r) { r = _r; }
+	}
 }
 //*/
 
