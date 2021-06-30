@@ -1,132 +1,83 @@
 class Base {
-	interface List {
+
+	interface Factory<T> {
+		List<T> nil();
+		List<T> cons(Object hd, List<T> tl);
+		List<T> convert(List<T> l);
+	}
+
+	interface List<T> {
 		Object getHead();
-		List getTail();
+		List<T> getTail();
+		T getSelf();
 	}
 
-	public static class Nil {
-		public Object getHead() { return null; }
-		public List getTail() { return null; }
+	interface Nil<T> extends List<T> {
+		default Object getHead() { return null; }
+		default List<T> getTail() { return null; }
 	}
 
-	public static class Cons {
-		private final Object hd;
-		private final List tl;
-		public Cons(Object _hd, List _tl) { hd = _hd; tl = _tl; }
-
-		public Object getHead() { return hd; }
-		public List getTail() { return tl; }
+        interface Cons<T> extends List<T> {
+		public Object getHead();
+		public List getTail();
 	}
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
 class Ext1 {
-	interface List extends Base.List {
-		List append(List r);
-	}
-
-	public static abstract class Nil extends Base.Nil implements List {
-		public List append(List r) {
-			return null; // TODO
-		}
-	}
-
-	public static abstract class Cons extends Base.Cons implements List {
-		public Cons(Object _hd, List _tl) { super(_hd, _tl); }
-		public List append(List r) {
-			return null; // TODO
-		}
-	}
-
-}
-//*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-class Ext2 {
-	interface Fun { List apply(Object o); }
 	
-	interface List extends Ext1.List {
-		List flatMap(Fun f);
+	interface Factory<T> extends Base.Factory<T> {
+		List<T> convert(Base.List<T> l);
 	}
 
-	public static abstract class Nil extends Ext1.Nil implements List {
-		public List flatMap(Fun f) {
-			return null; // TODO
+	interface List<T> extends Base.List<T>, Factory<T> {
+		List<T> append(List<T> r);
+	}
+
+	interface Nil<T> extends Base.Nil<T>, List<T> {
+		default List<T> append(List<T> r) {
+			return r;
 		}
 	}
 
-	public static abstract class Cons extends Ext1.Cons implements List {
-		public Cons(Object _hd, List _tl) { super(_hd, _tl); }
-		public List flatMap(Fun f) {
-			return null; // TODO
+	interface Cons<T> extends Base.Cons<T>, List<T> {
+		default List<T> append(List<T> r) {
+			return convert(cons(getHead(), convert(getTail()).append(r)));
 		}
 	}
+
 }
 //*/
 
 
+class Ext2 {
+	interface Fun<T> { List<T> apply(Object o); }
 
+	interface Factory<T> extends Ext1.Factory<T> {
+		List<T> convert(Base.List<T> l);
+	}
+	
+	interface List<T> extends Ext1.List<T>, Factory<T> {
+		List<T> flatMap(Fun<T> f);
+	}
 
+	interface Nil<T> extends Ext1.Nil<T>, List<T> {
+		default List<T> flatMap(Fun<T> f) {
+			return convert(nil());
+		}
+	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	interface Cons<T> extends Ext1.Cons<T>,  List<T> {
+		default List flatMap(Fun<T> f) {
+			return convert(f.apply(getHead()).append(convert(getTail()).flatMap(f)));
+		}
+	}
+}
+//*/
 
 /*
 class Ext3 {
-	public abstract class Append extends List {
+	public abstract class Append implements List {
 		private List l, r;
 		public Append(List _l, List _r) { l = _l; r = _r; }
 		public List getLeft() { return l; }
@@ -152,9 +103,10 @@ class Ext3 {
 		}
 		
 		public Object getHead() { return hnf().getHead(); }
-		public List getTail() { return hnd().getTail(); }
-		public List flatMap() { 
-			return app(getLeft().flatMap(f), getRight().flatMap(f)); 
+		public Base.List getTail() { return hnf().getTail(); }
+		public Ext2.List flatMap(Ext2.Fun f) { 
+			return app(convert(getLeft().flatMap(f)),
+					convert(getRight().flatMap(f))); 
 		}
 	}
 
@@ -167,73 +119,97 @@ class Ext3 {
 		default List step() { return this; }
 		default boolean canStep() { return false; }
 		default List hnf() { return this; }
-		List delayedAppend(List o);
+		List delayAppend(List o);
 	}
 
 	public static abstract class Nil extends Ext2.Nil implements List {
-		public List delayedAppend(List o) { return o; } 
+		public List delayAppend(List o) { return o; } 
 	}
 
 	public static abstract class Cons extends Ext2.Cons implements List {
 		public Cons(Object _hd, List _tl) { super(_hd, _tl); }
-		public List delayedAppend(List o) {
-			return null; // TODO
+		public List delayAppend(List o) {
+			return convert(cons(getHead(), app(convert(getTail()), o)));
 		}
 	}
 }
 //*/
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
 class BaseFinal {
-	interface Factory { // TODO
-		public Base.List nil() { return new Nil(); }
-		public Base.List cons() { // TODO
-			// TODO
+	interface Factory extends Base.Factory<List> {
+		default Base.List nil() { return new Nil(); }
+		default Base.List cons(Object hd, List tl) {
+			return new Cons(hd, tl);
 		}
-		public Base.List convert(Base.List l) { 
-			// TODO
+		default Base.List<List> convert(Base.List<List> l) { 
+			return l.getSelf();
 		}
 	}
-	interface List { // TODO
+	interface List extends Base.List<List> {
+		default List getSelf() { return this; }
 	}
-	class Nil {} // TODO
-	class Cons {
-		private final Object _hd;
-		private final List _tl
+	static class Nil implements List, Base.Nil<List> {}
+	static class Cons implements List, Base.Cons<List> {
+		private final Object hd;
+		private final List tl;
 		public Cons(Object _hd, List _tl) { hd = _hd; tl = _tl; }
+		public Object getHead() { return hd; }
+		public List getTail() { return tl; }
 	}
 }
 //*/
 
-/*
+
 class Ext1Final {
-	// TODO
+	interface Factory extends Ext1.Factory<List> {
+		default Base.List<List> nil() { return new Nil(); }
+		default Base.List<List> cons(Object hd, Base.List tl) {
+			return new Cons(hd, convert(tl));
+		}
+		default List convert(Base.List<List> l) { 
+			return l.getSelf();
+		}
+	}
+	interface List extends Ext1.List<List>, Factory {
+		default List getSelf() { return this; }
+	}
+	static class Nil implements List, Ext1.Nil<List> {}
+	static class Cons implements List, Ext1.Cons<List> {
+		private final Object hd;
+		private final List tl;
+		public Cons(Object _hd, List _tl) { hd = _hd; tl = _tl; }
+		public Object getHead() { return hd; }
+		public List getTail() { return tl; }
+	}
 } 
 //*/
 
-/*
+///*
 class Ext2Final {
+	interface Factory extends Ext2.Factory<List> {
+		default Base.List<List> nil() { return new Nil(); }
+		default Base.List<List> cons(Object hd, Base.List tl) {
+			return new Cons(hd, convert(tl));
+		}
+		default List app(Ext2.List<List> l, Ext2.List<List> r) {
+			return new Append(l, r);
+		}
+		default List convert(Base.List<List> l) { 
+			return l.getSelf();
+		}
+	}
+	interface List extends Ext2.List<List>, Factory {
+		default List getSelf() { return this; }
+	}
+	static class Nil implements List, Ext1.Nil<List> {}
+	static class Cons implements List, Ext1.Cons<List> {
+		private final Object hd;
+		private final List tl;
+		public Cons(Object _hd, List _tl) { hd = _hd; tl = _tl; }
+		public Object getHead() { return hd; }
+		public List getTail() { return tl; }
+	}
 	// TODO
 }
 //*/
