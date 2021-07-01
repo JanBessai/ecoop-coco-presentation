@@ -1,3 +1,5 @@
+// The expression problem, trivially! (Wang and Oliveira, Modularity 2016)
+
 class base {
 	interface Exp {
 		Exp pred();
@@ -27,15 +29,19 @@ class base {
 
 class ext1 {
 	interface Exp extends base.Exp {
+		Exp pred();
 		Exp add(Exp n);
 	}
 
 	interface Zero extends base.Zero, Exp {
+		// duplicated
+		default Exp pred() { return this; }
 		default Exp add(Exp n) { return n; }	
 	}
 
 	interface Succ extends base.Succ, Exp {
 		Exp getPred();
+		// duplicated!
 		default Exp pred() { return getPred(); }
 		default Exp add(Exp n) {
 			return new ext1.finalized.Succ(pred().add(n));
@@ -160,7 +166,9 @@ class merged {
 			if (getLeft().isZero()) { return getRight(); }
 
 			// changed in a subtle way! merged vs ext2
-			return new merged.finalized.Succ(new ext2.finalized.Add(getLeft().pred(), getRight()));	
+			return new merged.finalized.Succ(
+				new merged.finalized.Add(getLeft().pred(),
+							getRight()));	
 		}
 
 	}

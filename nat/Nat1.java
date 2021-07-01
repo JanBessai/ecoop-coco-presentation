@@ -1,4 +1,3 @@
-
 class base {
 	interface Exp {
 		Exp pred();
@@ -67,7 +66,9 @@ class ext2 {
 			}
 			if (getLeft().isZero()) { return getRight(); }
 
-			return new Succ(new Add(getLeft().pred(), getRight()));	
+			return new Succ(
+				new Add(getLeft().pred(),
+					getRight()));	
 		}
 		public base.Exp eval() {
 			Exp n = this;
