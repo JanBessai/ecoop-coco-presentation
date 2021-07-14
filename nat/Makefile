@@ -1,4 +1,4 @@
-all: clean Nat1.class Nat2.class
+all: clean Nat1.class Nat2.class Nat3.class
 
 Nat1.class: Nat1.java
 	javac Nat1.java
