@@ -215,7 +215,7 @@ class merged {
 			private base.Exp<Exp> l, r;
 			public Add(base.Exp<Exp> _l, base.Exp<Exp> _r) { l = _l; r = _r; }
 			public base.Exp<Exp> getLeft() { return l; }
-		//	public base.Exp<Exp> getRight() { return r; }
+			public base.Exp<Exp> getRight() { return r; }
 			public void setLeft(base.Exp<Exp> _l) { l = _l; }
 		}
 	}
